@@ -1,0 +1,22 @@
+{{- range $service := .Values.services }}
+{{- if $service.service.enable }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $service.name }}
+  namespace: {{ $.Values.environment }}
+  labels:
+    projectname: dockercoins
+    environment: {{ $.Values.environment }}
+    servicename: {{ $service.name }}
+spec:
+  type: {{ $service.service.type }}
+  ports:
+    - port: {{ $service.port }}
+      targetPort: {{ $service.targetPort }}
+      protocol: TCP
+  selector:
+    app: {{ $service.name }}
+{{- end }}
+{{- end }}

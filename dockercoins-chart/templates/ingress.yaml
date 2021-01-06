@@ -1,0 +1,20 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.service.name }}-ingress
+  namespace: {{ .Values.environment }}
+  labels:
+    projectname: dockercoins
+    environment: {{ .Values.environment }}
+    servicename: {{ .Values.service.name }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.hosts | quote }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ .Values.service.name }}
+              servicePort: {{ .Values.service.port }}
+{{- end }}

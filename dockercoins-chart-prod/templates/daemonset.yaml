@@ -1,0 +1,41 @@
+{{- range $service := .Values.services }}
+{{- if $service.daemonset.enabled }}
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: {{ $service.name }}-daemonset
+  namespace: {{ $.Values.environment }}
+  labels:
+    projectname: dockercoins
+    environment: {{ $.Values.environment }}
+    servicename: {{ $service.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $service.name | quote }}
+  template:
+    metadata:
+      labels:
+        app: {{ $service.name | quote }}
+    spec:
+      containers:
+        - name: {{ $service.name }}
+          image: {{ $.Values.registry }}/{{ $service.image.repository }}:{{ $service.image.tag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: {{ $service.port }}
+              protocol: TCP
+          {{- if $service.healthcheck }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ $service.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ $service.port }}
+          {{- end }}
+{{- end }}
+{{- end }}

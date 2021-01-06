@@ -1,0 +1,38 @@
+{{- if .Values.daemonset.enabled -}}
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.service.name }}-daemonset
+  namespace: {{ .Values.environment }}
+  labels:
+    projectname: dockercoins
+    environment: {{ .Values.environment }}
+    servicename: {{ .Values.service.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name | quote }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name | quote }}
+    spec:
+      containers:
+        - name: {{ .Values.service.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          {{- if .Values.service.healthcheck }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ $.Values.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ $.Values.service.port }}
+          {{- end }}
+{{- end }}
